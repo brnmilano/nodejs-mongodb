@@ -1,24 +1,25 @@
 const { MongoClient } = require("mongodb");
 
 const uri = "mongodb://localhost:27017/mongodb-connection-01";
+
 const client = new MongoClient(uri);
+
+let db;
 
 async function connectToDatabase() {
   try {
     await client.connect();
 
-    console.log("Connected to MongoDB");
+    console.log("✅ Conectado ao MongoDB!");
 
-    const db = client.db();
+    db = client.db();
 
     return db;
-  } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
-
-    throw error;
+  } catch (err) {
+    console.error("❌ Erro ao conectar ao MongoDB:", err.message);
   }
 }
 
 connectToDatabase();
 
-module.exports = client;
+module.exports = { client, getDb: () => db };
