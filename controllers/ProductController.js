@@ -73,4 +73,74 @@ module.exports = class ProductController {
       res.status(500).send("Erro Interno do Servidor");
     }
   }
+
+  static async removeProduct(req, res) {
+    try {
+      const { id } = req.params;
+
+      const deletedCount = await Product.removeProductById(id);
+
+      if (deletedCount === 0) {
+        return res.status(404).send("❌ Produto não encontrado para remoção");
+      }
+
+      console.log("✅ Produto removido com sucesso, ID:", id);
+
+      res.redirect("/products");
+    } catch (error) {
+      console.error("❌ Erro ao remover produto:", error.message);
+
+      res.status(500).send("Erro Interno do Servidor");
+    }
+  }
+
+  static async editProduct(req, res) {
+    try {
+      const { id } = req.params;
+
+      const product = await Product.getProductById(id);
+
+      if (!product) {
+        return res.status(404).send("❌ Produto não encontrado para edição");
+      }
+
+      console.log("✅ Produto encontrado para edição:", product.name);
+
+      res.render("products/edit", { product });
+    } catch (error) {
+      console.error("❌ Erro ao buscar produto para edição:", error.message);
+
+      res.status(500).send("Erro Interno do Servidor");
+    }
+  }
+
+  static async editProductPost(req, res) {
+    try {
+      const { id, name, price, description, image } = req.body;
+
+      if (!name || !price || !description) {
+        return res
+          .status(400)
+          .send("❌ Nome, preço e descrição são obrigatórios para edição");
+      }
+
+      const product = new Product(name, price, description, image);
+
+      const modifiedCount = await Product.updateProduct(id, product);
+
+      if (modifiedCount === 0) {
+        return res
+          .status(404)
+          .send("❌ Produto não encontrado para atualização");
+      }
+
+      console.log("✅ Produto atualizado com sucesso, ID:", id);
+
+      res.redirect("/products");
+    } catch (error) {
+      console.error("❌ Erro ao atualizar produto:", error.message);
+
+      res.status(500).send("Erro Interno do Servidor");
+    }
+  }
 };

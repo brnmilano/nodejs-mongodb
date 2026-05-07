@@ -38,21 +38,22 @@ class Product {
     return product;
   }
 
-  static async removeProduct(id) {
+  static async removeProductById(id) {
     const db = getDb();
+
     await db.collection("products").deleteOne({ _id: new ObjectId(id) });
 
     return;
   }
 
-  updateProduct(id) {
+  static async updateProduct(id, productData) {
     const db = getDb();
-    db.collection("products").updateOne(
-      { _id: new ObjectId(id) },
-      { $set: this },
-    );
 
-    return;
+    const result = await db
+      .collection("products")
+      .updateOne({ _id: new ObjectId(id) }, { $set: productData });
+
+    return result.modifiedCount;
   }
 }
 
