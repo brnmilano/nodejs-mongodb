@@ -3,7 +3,7 @@ const Product = require("../models/Product");
 module.exports = class ProductController {
   static async showProducts(req, res) {
     try {
-      const products = await Product.getProducts();
+      const products = await Product.find().lean();
 
       console.log("✅ Produtos encontrados:", products.length);
 
@@ -38,7 +38,7 @@ module.exports = class ProductController {
           .send("❌ Nome, preço e descrição são obrigatórios");
       }
 
-      const newProduct = new Product(name, price, description, image);
+      const newProduct = new Product({ name, price, description, image });
 
       await newProduct.save();
 
@@ -56,7 +56,7 @@ module.exports = class ProductController {
     try {
       const { id } = req.params;
 
-      const product = await Product.getProductById(id);
+      const product = await Product.findById(id).lean();
 
       console.log(product);
 
@@ -78,7 +78,7 @@ module.exports = class ProductController {
     try {
       const { id } = req.params;
 
-      const deletedCount = await Product.removeProductById(id);
+      const deletedCount = await Product.deleteOne({ _id: id });
 
       if (deletedCount === 0) {
         return res.status(404).send("❌ Produto não encontrado para remoção");
@@ -98,7 +98,7 @@ module.exports = class ProductController {
     try {
       const { id } = req.params;
 
-      const product = await Product.getProductById(id);
+      const product = await Product.findById(id).lean();
 
       if (!product) {
         return res.status(404).send("❌ Produto não encontrado para edição");
@@ -124,11 +124,19 @@ module.exports = class ProductController {
           .send("❌ Nome, preço e descrição são obrigatórios para edição");
       }
 
-      const product = new Product(name, price, description, image);
+      const product = await Product.findById(id).lean();
 
-      const modifiedCount = await Product.updateProduct(id, product);
+      if (!product) {
+        return res.status(404).send("❌ Produto não encontrado para edição");
+      }
 
-      if (modifiedCount === 0) {
+      const modifiedProduct = await Product.updateOne(
+        { _id: id },
+        { name, price, description, image },
+        { new: true },
+      ).lean();
+
+      if (modifiedProduct === 0) {
         return res
           .status(404)
           .send("❌ Produto não encontrado para atualização");
